@@ -6,8 +6,7 @@ var dht = new(require('bittorrent-dht'))({ bootstrap: false })
 dht.listen(5001)
 
 console.log(kp.id)
-var prev = 'null'
-updateHash(prev)
+updateHash('null')
 
 var server = http.createServer(function (req, res) {
   if (req.url === '/post') {
@@ -23,21 +22,19 @@ server.listen(5000)
 
 function post (value, cb) {
   value = Buffer.concat([
-    Buffer(prev.toString('hex') + '\n'),
+    Buffer(prev + '\n'),
     value
   ])
   dht.put({ v: value }, function (errors, hash) {
     errors.forEach(console.error)
-    prev = hash
-    console.log(hash.toString('hex'))
     updateHash(hash)
     cb(null, hash)
   })
 }
 
-var seq = 0
 function updateHash (hash) {
   var hex = hash.toString('hex')
+  prev = hex
   dht.put(kp.store(hex), function onput(errors, hash) {
     errors.forEach(console.error)
   })
